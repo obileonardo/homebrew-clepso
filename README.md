@@ -61,14 +61,16 @@ This cask removes the app and preserves usage history and preferences. It has no
 
 ## Release maintenance
 
-After publishing the next Clepso release as GitHub **Latest**, run:
+After publishing the next Clepso release as GitHub **Latest**, work in the actual tapped checkout so Homebrew audits your edited cask:
 
 ```sh
+cd "$(brew --repository obileonardo/clepso)"
+git switch -c update/clepso-release
 python3 scripts/update-cask.py
 brew style Casks/clepso.rb
 brew audit --cask --strict --online obileonardo/clepso/clepso
 git diff
-# Commit and push the reviewed version/checksum change.
+# Commit and push the reviewed version/checksum change, then open a pull request.
 ```
 
 The updater only accepts public Latest releases from `obileonardo/clepso`. It validates the tag, asset URLs and sizes, downloads the DMG and `SHA256SUMS`, and requires their computed SHA-256 values to agree with GitHub's asset digests and the checksum manifest. It never executes release metadata as code. `python3 scripts/update-cask.py --check` checks without writing files.
