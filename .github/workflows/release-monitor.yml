@@ -1,0 +1,24 @@
+name: Release monitor
+
+on:
+  schedule:
+    - cron: "23 9 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check tap against public Latest and downloaded checksums
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/update-cask.py --check

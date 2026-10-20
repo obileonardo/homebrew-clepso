@@ -1,0 +1,62 @@
+name: Homebrew cask
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cask-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  cask:
+    name: Audit and install (Apple silicon)
+    runs-on: macos-15
+    timeout-minutes: 25
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ENV_HINTS: "1"
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate release handling and Ruby syntax
+        run: |
+          test "$(uname -m)" = arm64
+          python3 -m unittest discover -s tests -v
+          ruby -c Casks/clepso.rb
+
+      - name: Register this checkout as the tap
+        run: |
+          tap_path="$(brew --repository)/Library/Taps/obileonardo/homebrew-clepso"
+          mkdir -p "$(dirname "$tap_path")"
+          ln -s "$GITHUB_WORKSPACE" "$tap_path"
+          if brew help trust >/dev/null 2>&1; then
+            brew trust --cask obileonardo/clepso/clepso
+          fi
+
+      - name: Homebrew style and online audit
+        run: |
+          brew style Casks/clepso.rb
+          brew audit --cask --strict --online obileonardo/clepso/clepso
+
+      - name: Install and verify the signed app
+        run: |
+          brew install --cask --require-sha --appdir="$RUNNER_TEMP/clepso-apps" obileonardo/clepso/clepso
+          python3 scripts/verify-installed.py "$RUNNER_TEMP/clepso-apps/Clepso.app"
+
+      - name: Uninstall test copy and verify removal
+        if: always()
+        run: |
+          if brew list --cask clepso >/dev/null 2>&1; then
+            brew uninstall --cask obileonardo/clepso/clepso
+          fi
+          test ! -e "$RUNNER_TEMP/clepso-apps/Clepso.app"
