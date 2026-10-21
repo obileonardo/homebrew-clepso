@@ -1,6 +1,6 @@
 cask "clepso" do
-  version "0.3.0-alpha.1"
-  sha256 "14c30bcbca659ff2da7b1be326469d04e997f5574b83409b7c96a148e9fb0d21"
+  version "0.3.0-alpha.2"
+  sha256 "3c54cc086e00607fe076b1059c786de105df4a512aca6b75213d598c40eeb2aa"
 
   url "https://github.com/obileonardo/clepso/releases/download/v#{version}/Clepso-#{version}.dmg"
   name "Clepso"
