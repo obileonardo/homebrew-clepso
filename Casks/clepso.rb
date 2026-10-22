@@ -1,6 +1,6 @@
 cask "clepso" do
-  version "0.3.0-alpha.3"
-  sha256 "e34982f0a34c48694aa0da5ba77ecf883efb78b421753e59d8c740e6eab596fd"
+  version "0.4.0-alpha.1"
+  sha256 "c6d2cc8d57126180da6c8976250a6bde9b914e3b873c4272f53973dacdae66e1"
 
   url "https://github.com/obileonardo/clepso/releases/download/v#{version}/Clepso-#{version}.dmg"
   name "Clepso"
@@ -13,8 +13,10 @@ cask "clepso" do
     strategy :github_latest
   end
 
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :sonoma
 
   app "Clepso.app"
+  binary "#{appdir}/Clepso.app/Contents/Helpers/clepso"
 end
