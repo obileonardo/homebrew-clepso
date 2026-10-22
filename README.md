@@ -43,11 +43,16 @@ Quit Clepso, then:
 
 ```sh
 brew update
-brew upgrade --cask obileonardo/clepso/clepso
+brew upgrade --cask --greedy obileonardo/clepso/clepso
 open -a Clepso
 ```
 
-Homebrew upgrades to the release pinned in the tap. Clepso's built-in automatic updater is not enabled in this alpha. User data and settings remain in your Library.
+Homebrew upgrades to the release pinned in the tap. From 0.4.0 alpha 1, Clepso also offers signed in-app updates in Settings.
+Automatic checks and installation start off; enable them if you prefer that route. The cask declares `auto_updates true`,
+so use `--greedy` when requesting a Homebrew upgrade. User data and settings remain in your Library.
+
+The cask links the signed `clepso` CLI from the app. To use its read-only MCP server, first allow a named client in
+Clepso Settings → Integrations, review the disclosure and copy setup. The server does not change client configuration.
 
 ## Uninstall
 

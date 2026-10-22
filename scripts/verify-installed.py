@@ -21,4 +21,22 @@ signature = subprocess.run(["codesign", "-dv", "--verbose=4", str(app)], check=T
 if "TeamIdentifier=DD8UY75RZT" not in signature or "Authority=Developer ID Application:" not in signature:
     sys.exit("Unexpected Developer ID signer")
 subprocess.run(["spctl", "--assess", "--type", "execute", "--verbose=2", str(app)], check=True)
+# Check the shipped integration components as installed by Homebrew, without launching them.
+for relative in ["Contents/Helpers/clepso-statusline", "Contents/Helpers/clepso",
+                 "Contents/PlugIns/ClepsoWidgets.appex", "Contents/Frameworks/Sparkle.framework"]:
+    component = app / relative
+    if not component.exists():
+        sys.exit("Missing signed component: " + relative)
+    subprocess.run(["codesign", "--verify", "--strict", str(component)], check=True)
+    signed = subprocess.run(["codesign", "-dv", "--verbose=4", str(component)], check=True,
+                            capture_output=True, text=True).stderr
+    if "TeamIdentifier=DD8UY75RZT" not in signed:
+        sys.exit("Unexpected component signer: " + relative)
+widget = plistlib.loads((app / "Contents/PlugIns/ClepsoWidgets.appex/Contents/Info.plist").read_bytes())
+if widget["CFBundleVersion"] != info["CFBundleVersion"]:
+    sys.exit("Widget and host builds differ")
+if not info.get("SURequireSignedFeed") or not info.get("SUVerifyUpdateBeforeExtraction"):
+    sys.exit("Update feed/archive verification is not required")
+if info.get("SUPublicEDKey") != "WeaRornZqBUmFaOutT62FtvopukvrlEZPCEiapwbCpk=":
+    sys.exit("Unexpected update verification key")
 print(f"Verified Clepso {version}, build {info['CFBundleVersion']}, Developer ID DD8UY75RZT; Gatekeeper accepted")
